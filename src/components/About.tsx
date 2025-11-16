@@ -2,8 +2,32 @@ import { Card } from "@/components/ui/card";
 import { Code2, Database, Cloud, GitBranch, Brain, Coffee, Workflow } from "lucide-react";
 import hostingerLogo from "@/assets/hostinger-logo.png";
 import aiRobotLogo from "@/assets/ai-robot.png";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { useRef, useState, useEffect } from "react";
+import type { CarouselApi } from "@/components/ui/carousel";
 
 const About = () => {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const autoplayRef = useRef(
+    Autoplay({
+      delay: 3000,
+      stopOnInteraction: false,
+      stopOnMouseEnter: true,
+    })
+  );
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCurrent(api.selectedScrollSnap());
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
+
   const skills = [
     {
       category: "Programming Languages",
@@ -75,43 +99,73 @@ const About = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {skills.map((skill, index) => {
-            const Icon = skill.icon;
-            return (
-              <Card 
-                key={index}
-                className="p-6 bg-card border-border hover:border-primary transition-all hover:glow-accent group min-h-[320px] flex flex-col w-full"
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                    <Icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold text-lg break-words">{skill.category}</h3>
-                </div>
-                <div className="grid grid-cols-2 gap-4 flex-1">
-                  {skill.items.map((item, i) => (
-                    <div 
-                      key={i} 
-                      className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-all hover:scale-105 group/item"
+        <div className="relative px-16">
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            plugins={[autoplayRef.current]}
+            className="w-full max-w-6xl mx-auto"
+            setApi={setApi}
+          >
+            <CarouselContent className="-ml-4">
+              {skills.map((skill, index) => {
+                const Icon = skill.icon;
+                return (
+                  <CarouselItem key={index} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                    <Card 
+                      className="p-6 bg-card border-border hover:border-primary transition-all hover:glow-accent group h-[400px] flex flex-col w-full"
                     >
-                      <div className="w-14 h-14 mb-2 flex items-center justify-center">
-                        <img 
-                          src={item.logo} 
-                          alt={item.name}
-                          className="w-full h-full object-contain group-hover/item:scale-110 transition-transform"
-                          style={{ filter: 'brightness(0.9)' }}
-                        />
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                          <Icon className="w-6 h-6 text-primary" />
+                        </div>
+                        <h3 className="font-semibold text-lg break-words">{skill.category}</h3>
                       </div>
-                      <span className="text-xs text-center font-medium text-foreground">
-                        {item.name}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            );
-          })}
+                      <div className="grid grid-cols-2 gap-3 flex-1">
+                        {skill.items.map((item, i) => (
+                          <div 
+                            key={i} 
+                            className="flex flex-col items-center justify-center p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-all hover:scale-105 group/item"
+                          >
+                            <div className="w-10 h-10 mb-1.5 flex items-center justify-center">
+                              <img 
+                                src={item.logo} 
+                                alt={item.name}
+                                className="w-full h-full object-contain group-hover/item:scale-110 transition-transform"
+                                style={{ filter: 'brightness(0.9)' }}
+                              />
+                            </div>
+                            <span className="text-xs text-center font-medium text-foreground leading-tight">
+                              {item.name}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  </CarouselItem>
+                );
+              })}
+            </CarouselContent>
+            <CarouselPrevious className="-left-12" />
+            <CarouselNext className="-right-12" />
+          </Carousel>
+          
+          <div className="flex justify-center gap-2 mt-6">
+            {[0, 1].map((index) => (
+              <button
+                key={index}
+                onClick={() => api?.scrollTo(index * 3)}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${
+                  Math.floor(current / 3) === index
+                    ? "bg-primary w-8"
+                    : "bg-muted-foreground/30"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
